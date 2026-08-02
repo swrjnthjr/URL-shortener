@@ -77,9 +77,25 @@ relevant to reviewers:
   failure — no raw error handling inside services or routes.
 - Keep modules under 200 lines; extract shared logic into `src/lib/`.
 
-## 6. Before Opening a PR
+## 6. Linting & Formatting
+
+- **ESLint** (`eslint.config.js`) enforces the guardrails in §5 that can be
+  checked mechanically (no `var`, `prefer-const`, `eqeqeq`) plus JS
+  correctness rules. Run `npm run lint` / `npm run lint:fix`.
+- **Prettier** (`.prettierrc.json`) owns formatting (quotes, semicolons,
+  line width, trailing commas) — don't hand-format or debate style in
+  review, run `npm run format` / `npm run format:check`.
+- `eslint-config-prettier` disables any ESLint stylistic rules that would
+  conflict with Prettier, so the two never fight over the same concern.
+- Scope: both tools run against `src/`, `test/`, `scripts/`, and `public/`.
+  `context/` (docs) and `.claude/` (harness config) are intentionally
+  excluded from Prettier — they're prose/config, not code style.
+
+## 7. Before Opening a PR
 
 - [ ] `npm test` passes locally.
+- [ ] `npm run lint` passes with no errors.
+- [ ] `npm run format:check` passes (or run `npm run format` first).
 - [ ] New/changed logic in `src/services/` or `src/lib/` has corresponding
       Jest unit tests.
 - [ ] New/changed routes have Supertest coverage.

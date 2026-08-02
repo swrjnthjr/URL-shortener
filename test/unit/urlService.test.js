@@ -20,12 +20,15 @@ describe('urlService.createShortUrl', () => {
       'INSERT INTO urls (long_url) VALUES ($1) RETURNING id',
       ['https://example.com/very/long/path']
     );
-    expect(db.query).toHaveBeenNthCalledWith(
-      2,
-      'UPDATE urls SET short_code = $1 WHERE id = $2',
-      ['10', 62]
-    );
-    expect(result).toEqual({ id: 62, shortCode: '10', longUrl: 'https://example.com/very/long/path' });
+    expect(db.query).toHaveBeenNthCalledWith(2, 'UPDATE urls SET short_code = $1 WHERE id = $2', [
+      '10',
+      62,
+    ]);
+    expect(result).toEqual({
+      id: 62,
+      shortCode: '10',
+      longUrl: 'https://example.com/very/long/path',
+    });
   });
 
   it('propagates errors from the insert query', async () => {
