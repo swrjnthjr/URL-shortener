@@ -20,11 +20,12 @@ store, and Redis as a read-through cache in front of the hot redirect path.
 - Clear separation of concerns (routes / controllers / services / lib) so the
   business logic (Base62 encoding, URL validation) stays framework-agnostic
   and unit-testable in isolation.
+- Track click/redirect events (timestamp, referrer, user-agent) per short
+  code for basic analytics.
 
 **Non-Goals** (for this version)
 - User accounts / auth.
 - Custom aliases or vanity codes.
-- Click analytics.
 - Link expiry.
 
 These are natural extensions but are out of scope until explicitly added to
@@ -59,10 +60,13 @@ These are natural extensions but are out of scope until explicitly added to
 2. Controller decodes the Base62 code back into a numeric ID (cheap, in
    memory — no DB hit needed just to decode).
 3. Service checks Redis for `code -> longUrl`.
-   - **Cache hit**: return the long URL immediately, issue a 302 redirect.
+   - **Cache hit**: return the long URL immediately, issue a 301 redirect.
    - **Cache miss**: query Postgres by ID, populate Redis (with a TTL), then
-     redirect.
+     redirect with 301.
 4. If no record exists for the given ID, return 404.
+5. Record a click event (short code, timestamp, referrer, user-agent) into
+   Postgres. This happens on every resolved request regardless of cache
+   hit/miss — see D7 for why click recording is decoupled from caching.
 
 ## 6. Diagram
 
@@ -87,6 +91,7 @@ flowchart TD
 
     subgraph DB["PostgreSQL"]
         PG[("urls table\nid | short_code | long_url | created_at")]
+        CLICKS[("clicks table\nid | short_code | ts | referrer | user_agent")]
     end
 
     A -->|"long URL"| R1 --> C1 --> S1
@@ -101,7 +106,8 @@ flowchart TD
     S1 -->|"1. lookup"| CACHE
     CACHE -.->|"miss"| PG
     PG -.->|"populate cache"| CACHE
-    S1 -->|"302 redirect to long_url"| A
+    S1 -->|"INSERT click event"| CLICKS
+    S1 -->|"301 redirect to long_url"| A
 ```
 
 ## 7. Design Decisions
@@ -132,6 +138,27 @@ The frontend's only job is to submit a form and display the result. A build
 step (React/Vue/etc.) would add tooling overhead disproportionate to the
 UI's complexity.
 
+**D6 — 301 (permanent) redirect, chosen over 302 despite the analytics tradeoff.**
+Browsers and intermediate caches/CDNs are allowed to cache a 301 response, so
+a repeat visitor's second click on the same short link may be served from
+cache and never reach the server at all — undercounting click analytics
+compared to a 302 (temporary redirect, no caching), which is what most
+production shorteners use for exactly this reason. This project explicitly
+accepts that tradeoff: 301 was chosen for its link semantics (a short URL is
+a permanent alias for the long URL). If click accuracy becomes a priority
+later, revisit this — switching to 302 is a one-line change in
+`redirectController.js`.
+
+**D7 — Click events are recorded in Postgres, decoupled from the cache path.**
+Click recording happens after cache lookup resolves (hit or miss) so it
+doesn't affect cache logic or the D2 cache/source-of-truth split — the
+`clicks` table is an independent, append-only log keyed by `short_code`,
+written on every successfully resolved redirect. Recording is a synchronous
+Postgres insert on the hot redirect path for the initial version; if this
+proves too slow under load, consider writing to Redis (`INCR`/`LPUSH`) and
+flushing to Postgres asynchronously — tracked as a follow-up, not part of
+the initial implementation.
+
 ## 8. Error Handling
 
 Per project convention (see `context/rules.md`):
@@ -148,3 +175,5 @@ Per project convention (see `context/rules.md`):
   `build-plan.md`.
 - Redis TTL value for cached redirects — TBD based on expected traffic
   patterns.
+- Whether click recording stays a synchronous Postgres insert or moves to an
+  async Redis-buffered write — revisit if it becomes a bottleneck (see D7).
