@@ -9,8 +9,10 @@ describe('urlService.createShortUrl', () => {
   });
 
   it('inserts the long url, encodes the returned id, and updates short_code', async () => {
+    // pg returns BIGSERIAL/int8 columns as strings, not numbers - the mock
+    // reflects that so this test would catch a regression of that bug.
     db.query
-      .mockResolvedValueOnce({ rows: [{ id: 62 }] }) // INSERT ... RETURNING id
+      .mockResolvedValueOnce({ rows: [{ id: '62' }] }) // INSERT ... RETURNING id
       .mockResolvedValueOnce({ rows: [] }); // UPDATE
 
     const result = await urlService.createShortUrl('https://example.com/very/long/path');
@@ -40,7 +42,7 @@ describe('urlService.createShortUrl', () => {
 
   it('propagates errors from the update query', async () => {
     db.query
-      .mockResolvedValueOnce({ rows: [{ id: 1 }] })
+      .mockResolvedValueOnce({ rows: [{ id: '1' }] })
       .mockRejectedValueOnce(new Error('update failed'));
 
     await expect(urlService.createShortUrl('https://example.com')).rejects.toThrow('update failed');

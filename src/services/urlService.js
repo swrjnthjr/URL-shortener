@@ -5,7 +5,9 @@ async function createShortUrl(longUrl) {
   const insertResult = await db.query('INSERT INTO urls (long_url) VALUES ($1) RETURNING id', [
     longUrl,
   ]);
-  const { id } = insertResult.rows[0];
+  // pg returns BIGSERIAL/int8 columns as strings (to avoid precision loss
+  // beyond Number.MAX_SAFE_INTEGER), so this must be coerced before encoding.
+  const id = Number(insertResult.rows[0].id);
   const shortCode = base62.encode(id);
 
   await db.query('UPDATE urls SET short_code = $1 WHERE id = $2', [shortCode, id]);
