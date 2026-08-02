@@ -9,8 +9,8 @@ this file is the single source of truth for "what's actually built" vs.
 
 | # | Milestone | Status | Branch / PR | Notes |
 |---|-----------|--------|--------------|-------|
-| M0 | Project Scaffolding | Not started | — | Folders, `server.js`/`app.js`, deps, jest config |
-| M1 | Base62 Encoding Library | Not started | — | `src/lib/base62.js` + unit tests |
+| M0 | Project Scaffolding | Done | `feat/scaffolding-and-base62` | Folders, `server.js`/`app.js`, deps, jest config |
+| M1 | Base62 Encoding Library | Done | `feat/scaffolding-and-base62` | `src/lib/base62.js` + unit tests, 100% coverage |
 | M2 | Database Layer | Not started | — | `urls` + `clicks` schema, `src/lib/db.js` |
 | M3 | Shorten Endpoint (`POST /api/shorten`) | Not started | — | |
 | M4 | Redirect Endpoint (`GET /:code`, 301) | Not started | — | |
@@ -29,7 +29,7 @@ functionality but still owe test coverage per `TESTING.md`.
 
 | Module | Unit Tests | Integration Tests (Supertest) |
 |--------|------------|-------------------------------|
-| `src/lib/base62.js` | Not started | N/A (pure function) |
+| `src/lib/base62.js` | Done (100% coverage) | N/A (pure function) |
 | `src/lib/db.js` | Not started | N/A |
 | `src/lib/cache.js` | Not started | N/A |
 | `src/services/urlService.js` | Not started | Not started |
@@ -41,3 +41,6 @@ functionality but still owe test coverage per `TESTING.md`.
 
 - 2026-08-02 — Tracker created. No features implemented yet; starting with
   M0 (scaffolding) and M1 (Base62 library + unit tests).
+- 2026-08-02 — M0 and M1 done. Express pinned to 4.19.2 per `rules.md`;
+  resulting `npm audit` advisories (all inside Express 4's own dependency
+  tree) documented as an accepted exception in `SECURITY.md`.
