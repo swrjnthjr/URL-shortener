@@ -67,6 +67,17 @@ account for:
   of this project — avoid adding a library for something a short utility
   function in `src/lib/` can do.
 
+**Known accepted exception — Express 4.x transitive advisories**
+Express is pinned to `4.19.2` (see `context/rules.md`) specifically because
+Express 4 does not natively catch async route-handler errors, which is used
+deliberately to demonstrate the `try/catch` + `next(err)` pattern documented
+in `rules.md` and `CONTRIBUTING.md`. As a result, `npm audit` reports 7
+advisories (body-parser, path-to-regexp, qs, send/serve-static, cookie) that
+live inside Express 4's own pinned dependency tree — `npm audit fix` cannot
+resolve them without a major-version bump to Express 5. These are accepted
+as-is for this portfolio project. Re-evaluate if Express is ever upgraded to
+5.x, or if this service handles untrusted traffic beyond a portfolio demo.
+
 ## 4. Secrets & Configuration
 
 - Postgres and Redis connection strings, and any other credentials, are
