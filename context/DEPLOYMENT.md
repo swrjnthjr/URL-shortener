@@ -54,6 +54,7 @@ real secrets (see `SECURITY.md` §4).
 |----------|---------|
 | `PORT` | Port the Express server listens on (default `3000`). |
 | `DATABASE_URL` | Postgres connection string, consumed by `src/lib/db.js` and `scripts/migrate.js`. |
+| `DB_SSL` | Set to `true` to connect over SSL with `rejectUnauthorized: false` — needed for managed Postgres providers (e.g. Render) whose connection proxy doesn't pass public CA chain validation. Leave unset/`false` for local Docker Compose — that Postgres doesn't support SSL at all, and setting this to `true` there causes a hard connection failure. |
 | `REDIS_URL` | Redis connection string (not yet consumed by app code — reserved for M6). |
 | `REDIS_CACHE_TTL_SECONDS` | Cache TTL for redirect lookups (not yet consumed — reserved for M6). |
 
@@ -63,8 +64,10 @@ real secrets (see `SECURITY.md` §4).
 2. Push it to wherever the target host pulls images from.
 3. On the host, run migrations once against the production database:
    ```bash
-   docker run --rm -e DATABASE_URL=<prod-url> url-shortly:<tag> node scripts/migrate.js
+   docker run --rm -e DATABASE_URL=<prod-url> -e DB_SSL=true url-shortly:<tag> node scripts/migrate.js
    ```
+   (`DB_SSL=true` is typically required for managed Postgres providers —
+   see the `DB_SSL` row above.)
 4. Start the app container with real environment variables injected at
    runtime (via the platform's secret manager, `docker run -e`, or an
    untracked `.env` file passed via `--env-file`) — never baked into the
@@ -82,6 +85,10 @@ real secrets (see `SECURITY.md` §4).
   `DATABASE_URL` is unset or malformed — `pg` falls back to ambient
   `PG*` env vars / local socket defaults, which usually isn't what you want
   in a container. Double-check the connection string.
+- **`The server does not support SSL connections`**: `DB_SSL=true` is set
+  against a Postgres instance that doesn't support SSL (e.g. the local
+  Docker Compose Postgres). Unset `DB_SSL` or set it to `false` for local
+  dev — it should only be `true` against managed providers that require it.
 - **Migration reruns every start / "already exists" errors**: shouldn't
   happen — `scripts/migrate.js` tracks applied migrations in a
   `schema_migrations` table and skips ones already recorded. If you see
