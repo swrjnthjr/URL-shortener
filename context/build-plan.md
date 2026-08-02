@@ -110,14 +110,23 @@ large), Conventional Commits, `npm test` passing before merge.
 - [ ] Supertest test confirming a second request for the same code doesn't
       re-hit Postgres (optional: verify via a DB call spy/counter).
 
-## M7 — Frontend
+## M7 — Frontend — Done
 
-- [ ] Static `public/index.html` — form to submit a long URL, displays the
+- [x] Static `public/index.html` — form to submit a long URL, displays the
       returned short URL.
-- [ ] Vanilla JS (`public/app.js`) — calls `POST /api/shorten` via `fetch`,
-      renders the result or error message.
-- [ ] Minimal CSS — no build step, no framework (architecture.md D5).
-- [ ] Serve `public/` as static assets from Express.
+- [x] Vanilla JS (`public/app.js`) — calls `POST /api/shorten` via `fetch`,
+      renders the result (with a copy-to-clipboard button) or error message.
+- [x] Minimal CSS (`public/style.css`) — no build step, no framework
+      (architecture.md D5); supports light/dark via `prefers-color-scheme`.
+- [x] Serve `public/` as static assets from Express (already wired in
+      `src/app.js` since M0). Verified manually: `GET /`, `/style.css`,
+      `/app.js` all return 200; `GET /:code` for an unrelated code still
+      falls through to the redirect route correctly.
+- Note: full end-to-end form submission (shorten -> real short URL) isn't
+  testable yet in this environment without a running Postgres instance —
+  verified the shorten endpoint fails gracefully (500 via the centralized
+  error handler, not a crash) when no DB is reachable. Revisit once M9
+  (Docker Compose) stands up local Postgres/Redis.
 
 ## M8 — Centralized Error Handling & Middleware — Done (pulled forward)
 

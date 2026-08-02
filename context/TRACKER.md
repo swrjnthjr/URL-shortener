@@ -16,7 +16,7 @@ this file is the single source of truth for "what's actually built" vs.
 | M4 | Redirect Endpoint (`GET /:code`, 301) | Done | `feat/shorten-and-redirect` | Service mocked in tests — no live Postgres yet |
 | M5 | Click Analytics | Not started | — | `clicks` table writes, decoupled from cache path |
 | M6 | Redis Cache Integration | Not started | — | |
-| M7 | Frontend | Not started | — | Static HTML/CSS/JS |
+| M7 | Frontend | Done | `feat/frontend` | Static HTML/CSS/JS; verified manually against a local server (no DB yet) |
 | M8 | Centralized Error Handling & Middleware | Done | `feat/shorten-and-redirect` | Pulled forward — needed by M3/M4 controllers |
 | M9 | Dockerization | Not started | — | |
 | M10 | Security Hardening Pass | Not started | — | helmet, rate limiting, `npm audit` |
@@ -56,3 +56,7 @@ functionality but still owe test coverage per `TESTING.md`.
   in this environment yet. True DB-backed integration tests per
   `TESTING.md` §5 are deferred until Docker Compose test infra exists
   (tracked under M9 in `build-plan.md`).
+- 2026-08-02 — M7 done. Static frontend (form + fetch + copy button),
+  manually verified against a local server: static assets serve
+  correctly and the redirect route isn't shadowed. Full shorten-to-
+  redirect flow still needs a live Postgres to test end-to-end (M9).
