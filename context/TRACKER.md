@@ -14,7 +14,7 @@ this file is the single source of truth for "what's actually built" vs.
 | M2 | Database Layer | Done | `feat/database-layer` | Raw SQL migrations + `src/lib/db.js`, 100% unit coverage |
 | M3 | Shorten Endpoint (`POST /api/shorten`) | Done | `feat/shorten-and-redirect` | Service mocked in tests — no live Postgres yet |
 | M4 | Redirect Endpoint (`GET /:code`, 301) | Done | `feat/shorten-and-redirect` | Service mocked in tests — no live Postgres yet |
-| M5 | Click Analytics | Not started | — | `clicks` table writes, decoupled from cache path |
+| M5 | Click Analytics | Done | `feat/click-analytics` | Fail-open click recording wired into redirect flow |
 | M6 | Redis Cache Integration | Not started | — | |
 | M7 | Frontend | Done | `feat/frontend` | Static HTML/CSS/JS; verified manually against a local server (no DB yet) |
 | M8 | Centralized Error Handling & Middleware | Done | `feat/shorten-and-redirect` | Pulled forward — needed by M3/M4 controllers |
@@ -37,7 +37,7 @@ functionality but still owe test coverage per `TESTING.md`.
 | `src/lib/shortCodeValidator.js` | Done (100% coverage) | N/A (pure function) |
 | `src/middleware/errorHandler.js` | Done (100% coverage) | N/A |
 | `src/services/urlService.js` | Done (100% coverage) | N/A |
-| `src/services/analyticsService.js` | Not started | Not started |
+| `src/services/analyticsService.js` | Done (100% coverage) | Done (mocked, see note below) |
 | `src/controllers/shortenController.js` | N/A (covered via integration) | Done (service mocked — see note below) |
 | `src/controllers/redirectController.js` | N/A (covered via integration) | Done (service mocked — see note below) |
 
@@ -66,3 +66,8 @@ functionality but still owe test coverage per `TESTING.md`.
 - 2026-08-02 — Added a Husky pre-commit hook running lint + format:check,
   same branch/milestone. Verified it blocks a deliberately broken commit
   and allows a clean one.
+- 2026-08-02 — M5 done. `recordClick` is called from `redirectController`
+  (needs `req` for referrer/user-agent), wrapped in its own try/catch so a
+  failure never breaks the redirect — verified with a test that rejects
+  the insert and asserts the 301 still happens. 66 tests passing, 100%
+  coverage. Same mocked-service caveat as M3/M4/M7 (no live Postgres yet).

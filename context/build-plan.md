@@ -80,19 +80,26 @@ large), Conventional Commits, `npm test` passing before merge.
 - [x] Supertest test: known code -> 301 with correct `Location` header;
       unknown code -> 404. Same mocked-service caveat as M3.
 
-## M5 — Click Analytics
+## M5 — Click Analytics — Done
 
-- [ ] Add `src/services/analyticsService.js` — `recordClick(shortCode, {
+- [x] Add `src/services/analyticsService.js` — `recordClick(shortCode, {
       referrer, userAgent })`: inserts a row into the `clicks` table.
-- [ ] Wire `recordClick` into the redirect flow in `urlService`, called on
-      every successfully resolved request (cache hit or miss) — see
-      architecture.md D7 for why this is decoupled from the cache path.
-- [ ] Ensure a failure to record a click never blocks or fails the redirect
-      itself (log and continue — the redirect response is the priority, not
-      the analytics write).
-- [ ] Jest unit tests for `analyticsService` with the DB client mocked.
-- [ ] Supertest test confirming a redirect still inserts a `clicks` row
-      (query the test DB directly after the request).
+- [x] Wire `recordClick` into the redirect flow — called from
+      `redirectController` (not `urlService`) after a successfully resolved
+      request, since it needs `req` for the `referer`/`user-agent` headers.
+      Decoupled from the cache path (architecture.md D7) — no cache exists
+      yet (M6), so this is a non-issue for now but the ordering already
+      matches the intended design.
+- [x] Ensure a failure to record a click never blocks or fails the redirect
+      itself: `recordClickSafely()` in `redirectController.js` awaits
+      `recordClick` inside its own `try/catch` and only logs on failure —
+      verified with a test that rejects `recordClick` and asserts the
+      redirect still returns 301.
+- [x] Jest unit tests for `analyticsService` with the DB client mocked.
+- [x] Supertest test confirming a redirect calls `recordClick` with the
+      right `shortCode`/`referrer`/`userAgent`. Same caveat as M3/M4:
+      `analyticsService` is mocked, no live Postgres in this environment —
+      a real "row actually inserted" check is deferred to M9.
 - [ ] (Optional, follow-up) `GET /api/stats/:code` — returns click count/
       recent events for a given short code. Not required for the initial
       analytics milestone; add only if explicitly scoped in later.
