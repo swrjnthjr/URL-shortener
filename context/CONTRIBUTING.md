@@ -88,8 +88,9 @@ relevant to reviewers:
 - `eslint-config-prettier` disables any ESLint stylistic rules that would
   conflict with Prettier, so the two never fight over the same concern.
 - Scope: both tools run against `src/`, `test/`, `scripts/`, and `public/`.
-  `context/` (docs) and `.claude/` (harness config) are intentionally
-  excluded from Prettier — they're prose/config, not code style.
+  `context/`, `README.md` (docs) and `.claude/` (harness config) are
+  intentionally excluded from Prettier — they're prose/config, not code
+  style.
 - **Enforced automatically**: a Husky `pre-commit` hook (`.husky/pre-commit`)
   runs `npm run lint` and `npm run format:check` on every commit. A commit
   with lint errors or unformatted files is rejected locally — you won't
