@@ -94,3 +94,13 @@ functionality but still owe test coverage per `TESTING.md`.
   gone, static assets still load under the default CSP, and the 20th
   `/api/shorten` request in a row returns a real `429`. 69 tests
   passing, 100% coverage, lint/format clean.
+- 2026-08-02 — Modernized the frontend (M7): gradient background,
+  refined card styling, brand icon, feature-highlight row, loading
+  state on submit, responsive stacking under 480px. Also fixed a bug
+  found while verifying against the real Docker stack: a direct hotfix
+  to `main` (outside the branch workflow) for Render's SSL requirements
+  had made `ssl:{rejectUnauthorized:false}` unconditional in
+  `src/lib/db.js`/`scripts/migrate.js`, breaking local Docker Compose
+  (that Postgres doesn't support SSL). Made it opt-in via `DB_SSL=true`,
+  documented in `.env.example`/`DEPLOYMENT.md`. 70 tests passing, 100%
+  coverage.
