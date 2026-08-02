@@ -77,9 +77,34 @@ relevant to reviewers:
   failure — no raw error handling inside services or routes.
 - Keep modules under 200 lines; extract shared logic into `src/lib/`.
 
-## 6. Before Opening a PR
+## 6. Linting & Formatting
+
+- **ESLint** (`eslint.config.js`) enforces the guardrails in §5 that can be
+  checked mechanically (no `var`, `prefer-const`, `eqeqeq`) plus JS
+  correctness rules. Run `npm run lint` / `npm run lint:fix`.
+- **Prettier** (`.prettierrc.json`) owns formatting (quotes, semicolons,
+  line width, trailing commas) — don't hand-format or debate style in
+  review, run `npm run format` / `npm run format:check`.
+- `eslint-config-prettier` disables any ESLint stylistic rules that would
+  conflict with Prettier, so the two never fight over the same concern.
+- Scope: both tools run against `src/`, `test/`, `scripts/`, and `public/`.
+  `context/` (docs) and `.claude/` (harness config) are intentionally
+  excluded from Prettier — they're prose/config, not code style.
+- **Enforced automatically**: a Husky `pre-commit` hook (`.husky/pre-commit`)
+  runs `npm run lint` and `npm run format:check` on every commit. A commit
+  with lint errors or unformatted files is rejected locally — you won't
+  find out only after opening a PR. Run `npm run lint:fix` / `npm run
+  format` to fix and re-commit.
+- The hook is installed automatically via the `prepare` script the first
+  time anyone runs `npm install` after cloning (standard Husky v9 setup) —
+  no manual setup step required.
+
+## 7. Before Opening a PR
 
 - [ ] `npm test` passes locally.
+- [ ] `npm run lint` passes with no errors (also enforced by the pre-commit
+      hook).
+- [ ] `npm run format:check` passes (also enforced by the pre-commit hook).
 - [ ] New/changed logic in `src/services/` or `src/lib/` has corresponding
       Jest unit tests.
 - [ ] New/changed routes have Supertest coverage.

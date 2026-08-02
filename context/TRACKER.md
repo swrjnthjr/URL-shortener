@@ -21,6 +21,7 @@ this file is the single source of truth for "what's actually built" vs.
 | M9 | Dockerization | Not started | — | |
 | M10 | Security Hardening Pass | Not started | — | helmet, rate limiting, `npm audit` |
 | M11 | Test Coverage Pass | Not started | — | |
+| M12 | Linting & Formatting | Done | `chore/eslint-prettier` | ESLint 9 (flat config) + Prettier 3 + Husky pre-commit hook |
 
 ## Unit Test Coverage by Module
 
@@ -60,3 +61,8 @@ functionality but still owe test coverage per `TESTING.md`.
   manually verified against a local server: static assets serve
   correctly and the redirect route isn't shadowed. Full shorten-to-
   redirect flow still needs a live Postgres to test end-to-end (M9).
+- 2026-08-02 — M12 done. ESLint 9 + Prettier 3 added; existing code now
+  passes both clean. Added to the pre-PR checklist in `CONTRIBUTING.md`.
+- 2026-08-02 — Added a Husky pre-commit hook running lint + format:check,
+  same branch/milestone. Verified it blocks a deliberately broken commit
+  and allows a clean one.

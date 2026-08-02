@@ -165,6 +165,28 @@ controllers needed somewhere to send caught errors via `next(err)`.
       `src/services/` has strong coverage per `TESTING.md` §7.
 - [ ] Fill any gaps found before closing out the plan.
 
+## M12 — Linting & Formatting — Done
+
+- [x] Install ESLint 9 (flat config, `eslint.config.js`) + Prettier 3.
+- [x] `eslint-config-prettier` to disable ESLint stylistic rules that would
+      conflict with Prettier.
+- [x] `eslint-plugin-jest` + a `test/**` override with Jest globals.
+- [x] `.prettierrc.json` / `.prettierignore` — scoped to `src/`, `test/`,
+      `scripts/`, `public/`; `context/` (docs) and `.claude/` (harness
+      config) intentionally excluded.
+- [x] `npm run lint` / `lint:fix` / `format` / `format:check` scripts.
+- [x] Ran across the existing codebase: one real finding (Express error
+      middleware's unused `next` — required by its 4-arg signature, fixed
+      with a scoped `eslint-disable-next-line`), four files reformatted by
+      Prettier (whitespace-only, verified via `git diff`).
+- [x] Added to the pre-PR checklist in `CONTRIBUTING.md`.
+- [x] Husky `pre-commit` hook (`.husky/pre-commit`) runs `npm run lint`
+      and `npm run format:check` on every commit, so violations are caught
+      locally before a PR is even opened. Verified manually: a commit with
+      an ESLint error was rejected; a clean commit passed. Installed via
+      the standard `prepare` script (`npm install` wires it up
+      automatically, no manual step).
+
 ---
 
 ## Deferred (Out of Scope for Now)

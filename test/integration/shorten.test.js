@@ -43,9 +43,7 @@ describe('POST /api/shorten', () => {
   it('returns 500 via the centralized error handler when the service throws', async () => {
     urlService.createShortUrl.mockRejectedValue(new Error('db unavailable'));
 
-    const res = await request(app)
-      .post('/api/shorten')
-      .send({ url: 'https://example.com' });
+    const res = await request(app).post('/api/shorten').send({ url: 'https://example.com' });
 
     expect(res.status).toBe(500);
     expect(res.body).toEqual({ error: { message: 'db unavailable' } });
