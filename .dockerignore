@@ -1,0 +1,8 @@
+node_modules/
+coverage/
+.git/
+.env
+.husky/
+context/
+test/
+*.md

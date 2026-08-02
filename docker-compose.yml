@@ -1,0 +1,45 @@
+services:
+  app:
+    build: .
+    ports:
+      - '3000:3000'
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgres://url_shortly:url_shortly@postgres:5432/url_shortly
+      REDIS_URL: redis://redis:6379
+      REDIS_CACHE_TTL_SECONDS: 3600
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: sh -c "node scripts/migrate.js && node server.js"
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: url_shortly
+      POSTGRES_PASSWORD: url_shortly
+      POSTGRES_DB: url_shortly
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U url_shortly']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

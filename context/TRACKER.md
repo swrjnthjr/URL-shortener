@@ -18,7 +18,7 @@ this file is the single source of truth for "what's actually built" vs.
 | M6 | Redis Cache Integration | Not started | — | |
 | M7 | Frontend | Done | `feat/frontend` | Static HTML/CSS/JS; verified manually against a local server (no DB yet) |
 | M8 | Centralized Error Handling & Middleware | Done | `feat/shorten-and-redirect` | Pulled forward — needed by M3/M4 controllers |
-| M9 | Dockerization | Not started | — | |
+| M9 | Dockerization | Done | `feat/dockerization` | Real end-to-end verification against live Postgres/Redis; caught and fixed a pg bigint-as-string bug |
 | M10 | Security Hardening Pass | Not started | — | helmet, rate limiting, `npm audit` |
 | M11 | Test Coverage Pass | Not started | — | |
 | M12 | Linting & Formatting | Done | `chore/eslint-prettier` | ESLint 9 (flat config) + Prettier 3 + Husky pre-commit hook |
@@ -71,3 +71,12 @@ functionality but still owe test coverage per `TESTING.md`.
   failure never breaks the redirect — verified with a test that rejects
   the insert and asserts the 301 still happens. 66 tests passing, 100%
   coverage. Same mocked-service caveat as M3/M4/M7 (no live Postgres yet).
+- 2026-08-02 — M9 done. `Dockerfile` + `docker-compose.yml` (app +
+  Postgres 16 + Redis 7). First real end-to-end run against live
+  containers caught a genuine bug our mocked unit tests had missed: `pg`
+  returns `BIGSERIAL` columns as strings, so `base62.encode(id)` threw on
+  every real insert. Fixed with an explicit `Number(...)` coercion in
+  `urlService.js`, and corrected the unit test mock to return a string id
+  so the regression can't silently reappear. Verified via `psql` that
+  `urls` and `clicks` rows are written correctly, including referrer
+  capture. `context/DEPLOYMENT.md` added.
