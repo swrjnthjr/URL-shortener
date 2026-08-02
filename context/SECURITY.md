@@ -51,9 +51,20 @@ account for:
   builder). Never build SQL via string concatenation with user input.
 
 **Abuse / Rate Limiting**
-- `POST /api/shorten` should be rate-limited per IP to prevent the service
-  being used to mass-generate short links (spam, phishing redirection).
-  Not yet implemented — tracked as a follow-up in `build-plan.md`.
+- `POST /api/shorten` is rate-limited per IP via `express-rate-limit`
+  (`src/middleware/rateLimiter.js`) to prevent the service being used to
+  mass-generate short links (spam, phishing redirection). Default: 20
+  requests per 15-minute window, configurable via `RATE_LIMIT_MAX_REQUESTS`
+  / `RATE_LIMIT_WINDOW_MS`. Verified against a real Docker Compose stack:
+  the 20th request onward returns `429`. `GET /:code` is intentionally not
+  rate-limited — it's the core redirect path and limiting it would degrade
+  the product for legitimate traffic; abuse there is bounded by the short
+  code space itself, not by request volume.
+- Uses `req.ip` for the per-client key, which depends on Express's `trust
+  proxy` setting. Not configured yet — if this is ever deployed behind a
+  reverse proxy/load balancer, `app.set('trust proxy', ...)` must be set
+  correctly, or every request will appear to come from the proxy's IP and
+  the limit will apply globally instead of per-client.
 
 ## 3. Dependency Auditing
 
@@ -93,7 +104,11 @@ as-is for this portfolio project. Re-evaluate if Express is ever upgraded to
 
 - Production deployment should sit behind TLS termination (reverse proxy or
   hosting platform) — the app itself does not implement HTTPS.
-- Recommended baseline security headers (via `helmet` or manual middleware)
-  once the app is production-facing: `X-Content-Type-Options: nosniff`,
-  a reasonable `Content-Security-Policy` for the static frontend, and
-  disabling `X-Powered-By`.
+- Baseline security headers are applied via `helmet()` (mounted first in
+  `src/app.js`, before body-parsing/static/routes): `X-Content-Type-Options:
+  nosniff`, `X-Frame-Options`, a default `Content-Security-Policy`
+  (`default-src 'self'`, appropriate for the static frontend since it has
+  no third-party scripts/styles/fonts), and `X-Powered-By` removed.
+  Verified against a real Docker Compose stack, including that static
+  assets (`/`, `/app.js`, `/style.css`) still load correctly under the
+  default CSP.
