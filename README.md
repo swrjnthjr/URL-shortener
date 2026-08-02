@@ -14,8 +14,10 @@ random-string generation with collision retries.
 - **Click analytics** — every resolved redirect records a click event
   (timestamp, referrer, user agent) in Postgres, without ever blocking or
   failing the redirect itself if the write fails.
-- **Static frontend** — a plain HTML/CSS/vanilla JS form at `/` for
-  shortening a URL and copying the result, no build step required.
+- **Static frontend** — a modern, responsive HTML/CSS/vanilla JS form at
+  `/` for shortening a URL and copying the result, no build step required.
+- **Hardened by default** — `helmet` security headers and per-IP rate
+  limiting on `POST /api/shorten`.
 
 See [`context/architecture.md`](context/architecture.md) for the full
 design (including a diagram) and the reasoning behind these choices.
@@ -29,6 +31,7 @@ design (including a diagram) and the reasoning behind these choices.
 | Frontend | Static HTML + vanilla CSS/JS |
 | Database | PostgreSQL (source of truth) |
 | Cache | Redis (reserved for the redirect hot path — not yet wired in) |
+| Security | `helmet` + `express-rate-limit` |
 | Testing | Jest + Supertest |
 | Linting/Formatting | ESLint 9 + Prettier 3, enforced via a Husky pre-commit hook |
 | Containerization | Docker + Docker Compose |
@@ -78,6 +81,10 @@ cp .env.example .env   # fill in DATABASE_URL / REDIS_URL for your setup
 npm run db:migrate
 npm run dev             # nodemon, or `npm start` for a plain node process
 ```
+
+Leave `DB_SSL` unset/`false` for a local/Docker Postgres — it only needs to
+be `true` against managed providers (e.g. Render) that require SSL. See
+[`context/DEPLOYMENT.md`](context/DEPLOYMENT.md) for details.
 
 ## Testing
 
