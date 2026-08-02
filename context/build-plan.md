@@ -148,14 +148,32 @@ controllers needed somewhere to send caught errors via `next(err)`.
       `next(err)`; validation failures (400/404) are returned directly since
       they're expected control flow, not exceptions.
 
-## M9 — Dockerization
+## M9 — Dockerization — Done
 
-- [ ] `Dockerfile` for the Node app (multi-stage if useful, but keep simple
-      given project scope).
-- [ ] `docker-compose.yml` for local dev: app + Postgres + Redis.
-- [ ] Confirm no secrets are baked into image layers — injected via env at
-      runtime (`SECURITY.md` §4).
-- [ ] Document manual deploy steps in `DEPLOYMENT.md`.
+- [x] `Dockerfile` for the Node app — single-stage (`node:20.12-alpine`,
+      matching `rules.md`'s pinned Node version), kept simple given project
+      scope. `npm ci --omit=dev --ignore-scripts` (skips `prepare`/Husky —
+      not needed in the image).
+- [x] `docker-compose.yml` for local dev: `app` + `postgres:16-alpine` +
+      `redis:7-alpine`, with healthchecks gating app startup. Postgres
+      mapped to host port `5433` (not `5432`) to avoid colliding with a
+      local Postgres install encountered during testing.
+- [x] Confirm no secrets are baked into image layers — the `Dockerfile`
+      only `COPY`s source directories (no `.env`), and `.dockerignore`
+      excludes `.env`/`.git`/`context/`/`test/`. Compose's Postgres/Redis
+      credentials are dev-only defaults, not real secrets (`SECURITY.md`
+      §4).
+- [x] Document manual deploy steps in `context/DEPLOYMENT.md`.
+- [x] **Real end-to-end verification** (first time this was possible with a
+      live Postgres/Redis): `docker compose up -d --build`, then exercised
+      `POST /api/shorten` -> `GET /:code` -> queried the `urls`/`clicks`
+      tables directly via `psql`. This caught a real bug — `pg` returns
+      `BIGSERIAL`/`int8` columns as **strings**, not numbers, so
+      `base62.encode(id)` was throwing on every real insert (unit tests had
+      mocked the DB with a JS number, masking this). Fixed in
+      `urlService.js` by coercing with `Number(...)` before encoding, with
+      a comment explaining why; the unit test mock was also corrected to
+      return a string id so this regression class can't silently reappear.
 
 ## M10 — Security Hardening Pass
 
