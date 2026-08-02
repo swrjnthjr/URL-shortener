@@ -5,11 +5,12 @@ const { Pool } = require('pg');
 const MIGRATIONS_DIR = path.join(__dirname, '..', 'migrations');
 
 async function run() {
+  // See src/lib/db.js for why this is opt-in via DB_SSL rather than always on.
+  const useSsl = process.env.DB_SSL === 'true';
+
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: false,
-    },
+    ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
   });
 
   try {

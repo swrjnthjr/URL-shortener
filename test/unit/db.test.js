@@ -17,9 +17,20 @@ describe('db', () => {
     process.env = ORIGINAL_ENV;
   });
 
-  it('constructs the pool with DATABASE_URL from the environment', () => {
+  it('constructs the pool without ssl by default', () => {
     require('../../src/lib/db');
-    expect(mockPool).toHaveBeenCalledWith({ connectionString: 'postgres://test/db' });
+    expect(mockPool).toHaveBeenCalledWith({
+      connectionString: 'postgres://test/db',
+    });
+  });
+
+  it('constructs the pool with ssl when DB_SSL=true', () => {
+    process.env.DB_SSL = 'true';
+    require('../../src/lib/db');
+    expect(mockPool).toHaveBeenCalledWith({
+      connectionString: 'postgres://test/db',
+      ssl: { rejectUnauthorized: false },
+    });
   });
 
   it('delegates query() to the underlying pool and returns its result', async () => {
