@@ -39,6 +39,8 @@ large), Conventional Commits, `npm test` passing before merge.
       Prisma/Knex) — resolves the open question in `architecture.md` §9.
 - [ ] Write the `urls` table schema (id, short_code, long_url, created_at)
       as a migration.
+- [ ] Write the `clicks` table schema (id, short_code, ts, referrer,
+      user_agent) as a migration (architecture.md §6, D7).
 - [ ] Add `src/lib/db.js` — thin Postgres client wrapper (connection pool),
       framework-agnostic.
 - [ ] Confirm all queries are parameterized (no string-concatenated SQL) —
@@ -65,10 +67,29 @@ large), Conventional Commits, `npm test` passing before merge.
       `try/catch`.
 - [ ] Extend `urlService` with `resolveShortCode(code)`: decode -> ID,
       look up long URL, return 404 if not found.
-- [ ] Supertest integration test: known code -> 302 with correct `Location`
+- [ ] Redirect with **301** (permanent) — see architecture.md D6 for the
+      analytics-caching tradeoff this implies; accepted as-is.
+- [ ] Supertest integration test: known code -> 301 with correct `Location`
       header; unknown code -> 404.
 
-## M5 — Redis Cache Integration
+## M5 — Click Analytics
+
+- [ ] Add `src/services/analyticsService.js` — `recordClick(shortCode, {
+      referrer, userAgent })`: inserts a row into the `clicks` table.
+- [ ] Wire `recordClick` into the redirect flow in `urlService`, called on
+      every successfully resolved request (cache hit or miss) — see
+      architecture.md D7 for why this is decoupled from the cache path.
+- [ ] Ensure a failure to record a click never blocks or fails the redirect
+      itself (log and continue — the redirect response is the priority, not
+      the analytics write).
+- [ ] Jest unit tests for `analyticsService` with the DB client mocked.
+- [ ] Supertest test confirming a redirect still inserts a `clicks` row
+      (query the test DB directly after the request).
+- [ ] (Optional, follow-up) `GET /api/stats/:code` — returns click count/
+      recent events for a given short code. Not required for the initial
+      analytics milestone; add only if explicitly scoped in later.
+
+## M6 — Redis Cache Integration
 
 - [ ] Add `src/lib/cache.js` — thin Redis client wrapper (`get`/`set` with
       TTL).
@@ -81,7 +102,7 @@ large), Conventional Commits, `npm test` passing before merge.
 - [ ] Supertest test confirming a second request for the same code doesn't
       re-hit Postgres (optional: verify via a DB call spy/counter).
 
-## M6 — Frontend
+## M7 — Frontend
 
 - [ ] Static `public/index.html` — form to submit a long URL, displays the
       returned short URL.
@@ -90,7 +111,7 @@ large), Conventional Commits, `npm test` passing before merge.
 - [ ] Minimal CSS — no build step, no framework (architecture.md D5).
 - [ ] Serve `public/` as static assets from Express.
 
-## M7 — Centralized Error Handling & Middleware
+## M8 — Centralized Error Handling & Middleware
 
 - [ ] Global error-handling middleware in `server.js`
       (`app.use((err, req, res, next) => {})`), mounted last.
@@ -98,7 +119,7 @@ large), Conventional Commits, `npm test` passing before merge.
 - [ ] Confirm no controller or service writes a raw 500 response directly
       (`rules.md` §"Error Handling & Middleware Chains").
 
-## M8 — Dockerization
+## M9 — Dockerization
 
 - [ ] `Dockerfile` for the Node app (multi-stage if useful, but keep simple
       given project scope).
@@ -107,7 +128,7 @@ large), Conventional Commits, `npm test` passing before merge.
       runtime (`SECURITY.md` §4).
 - [ ] Document manual deploy steps in `DEPLOYMENT.md`.
 
-## M9 — Security Hardening Pass
+## M10 — Security Hardening Pass
 
 - [ ] Add `helmet` (or manual headers) — `SECURITY.md` §5.
 - [ ] Add rate limiting to `POST /api/shorten` (`SECURITY.md` §2, "Abuse /
@@ -116,7 +137,7 @@ large), Conventional Commits, `npm test` passing before merge.
 - [ ] Re-review input validation on both endpoints against the threat model
       in `SECURITY.md` §2 before considering this "done."
 
-## M10 — Test Coverage Pass
+## M11 — Test Coverage Pass
 
 - [ ] `npm test -- --coverage`, confirm `src/lib/` is fully covered and
       `src/services/` has strong coverage per `TESTING.md` §7.
@@ -129,6 +150,7 @@ large), Conventional Commits, `npm test` passing before merge.
 Per `architecture.md` §2 Non-Goals — revisit only if explicitly added here:
 - User accounts / auth
 - Custom aliases / vanity codes
-- Click analytics
 - Link expiry
+- Stats/reporting endpoint or dashboard on top of the `clicks` table (raw
+  event recording is in scope via M5; querying/visualizing it is not)
 - CI/CD pipeline (currently manual deploy per `architecture.md` §3)
