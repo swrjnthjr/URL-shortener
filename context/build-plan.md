@@ -11,25 +11,25 @@ large), Conventional Commits, `npm test` passing before merge.
 
 ## M0 — Project Scaffolding
 
-- [ ] Create `src/routes/`, `src/controllers/`, `src/services/`,
+- [x] Create `src/routes/`, `src/controllers/`, `src/services/`,
       `src/middleware/`, `src/lib/` per the layout in `rules.md`.
-- [ ] Add `server.js` (bootstraps Express, mounts routes, mounts the
+- [x] Add `server.js` (bootstraps Express, mounts routes, mounts the
       centralized error-handling middleware last).
-- [ ] Add `app.js` exporting the Express app separately from `.listen()` so
+- [x] Add `app.js` exporting the Express app separately from `.listen()` so
       Supertest can bind it directly (see `TESTING.md` §5).
-- [ ] Replace the placeholder `test` script in `package.json` with `jest`.
-- [ ] Install core deps: `express`, `pg`, `redis` (or `ioredis`), `jest`,
+- [x] Replace the placeholder `test` script in `package.json` with `jest`.
+- [x] Install core deps: `express`, `pg`, `redis` (or `ioredis`), `jest`,
       `supertest`, `nodemon` (dev).
-- [ ] Add `.env.example` (placeholders only) and confirm `.env` is
+- [x] Add `.env.example` (placeholders only) and confirm `.env` is
       gitignored — see `SECURITY.md` §4.
 
 ## M1 — Base62 Encoding Library
 
-- [ ] Implement `src/lib/base62.js`: `encode(id: number): string` and
+- [x] Implement `src/lib/base62.js`: `encode(id: number): string` and
       `decode(code: string): number`. Pure function, no I/O (architecture.md D1, D3).
-- [ ] Reject invalid characters in `decode` with a clear error rather than
+- [x] Reject invalid characters in `decode` with a clear error rather than
       silently producing a wrong ID.
-- [ ] Jest unit tests: encode/decode are inverses across a range of IDs
+- [x] Jest unit tests: encode/decode are inverses across a range of IDs
       (0, 1, large numbers near `Number.MAX_SAFE_INTEGER`); invalid input
       throws (see `TESTING.md` §4).
 
@@ -181,14 +181,28 @@ controllers needed somewhere to send caught errors via `next(err)`.
       a comment explaining why; the unit test mock was also corrected to
       return a string id so this regression class can't silently reappear.
 
-## M10 — Security Hardening Pass
+## M10 — Security Hardening Pass — Done
 
-- [ ] Add `helmet` (or manual headers) — `SECURITY.md` §5.
-- [ ] Add rate limiting to `POST /api/shorten` (`SECURITY.md` §2, "Abuse /
+- [x] Add `helmet` — mounted first in `src/app.js`. Verified against a real
+      Docker Compose stack: baseline headers present (`X-Content-Type-
+      Options`, `X-Frame-Options`, CSP), `X-Powered-By` removed, static
+      assets still load correctly under the default CSP (`SECURITY.md` §5).
+- [x] Add rate limiting to `POST /api/shorten` — `express-rate-limit` via
+      `src/middleware/rateLimiter.js`, 20 requests / 15-minute window by
+      default, configurable via env for testing. Verified against a real
+      Docker Compose stack: the 20th request onward returns `429`.
+      `GET /:code` deliberately left unlimited (`SECURITY.md` §2, "Abuse /
       Rate Limiting").
-- [ ] Run `npm audit`, resolve any advisories (`SECURITY.md` §3).
-- [ ] Re-review input validation on both endpoints against the threat model
-      in `SECURITY.md` §2 before considering this "done."
+- [x] Run `npm audit`, resolve any advisories — no new advisories from
+      `helmet`/`express-rate-limit`; same 7 pre-existing Express 4
+      transitive advisories as before, already documented as an accepted
+      exception (`SECURITY.md` §3).
+- [x] Re-review input validation on both endpoints against the threat model
+      in `SECURITY.md` §2: `isValidUrl`/`isValidShortCode` already cover
+      protocol restriction and charset validation (M3/M4); SSRF remains
+      inapplicable since the service never fetches submitted URLs
+      server-side; all queries confirmed parameterized (M2). No gaps found,
+      no code changes needed beyond what M3/M4/M2 already provide.
 
 ## M11 — Test Coverage Pass
 

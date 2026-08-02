@@ -19,7 +19,7 @@ this file is the single source of truth for "what's actually built" vs.
 | M7 | Frontend | Done | `feat/frontend` | Static HTML/CSS/JS; verified manually against a local server (no DB yet) |
 | M8 | Centralized Error Handling & Middleware | Done | `feat/shorten-and-redirect` | Pulled forward — needed by M3/M4 controllers |
 | M9 | Dockerization | Done | `feat/dockerization` | Real end-to-end verification against live Postgres/Redis; caught and fixed a pg bigint-as-string bug |
-| M10 | Security Hardening Pass | Not started | — | helmet, rate limiting, `npm audit` |
+| M10 | Security Hardening Pass | Done | `feat/security-hardening` | helmet + express-rate-limit, verified against live Docker stack |
 | M11 | Test Coverage Pass | Not started | — | |
 | M12 | Linting & Formatting | Done | `chore/eslint-prettier` | ESLint 9 (flat config) + Prettier 3 + Husky pre-commit hook |
 
@@ -85,3 +85,12 @@ functionality but still owe test coverage per `TESTING.md`.
   001, since that may already be applied elsewhere). Verified against a
   fresh Docker Compose stack: first row got `id=100001` -> short code
   `q0V`.
+- 2026-08-02 — M10 done. Added `helmet` (mounted first in `src/app.js`)
+  and `express-rate-limit` on `POST /api/shorten` (20 req/15min default,
+  configurable via env). No new `npm audit` advisories. Re-reviewed
+  input validation/SSRF/injection against `SECURITY.md` §2 — no gaps,
+  no changes needed beyond what M2/M3/M4 already cover. Verified against
+  a real Docker Compose stack: helmet headers present, `X-Powered-By`
+  gone, static assets still load under the default CSP, and the 20th
+  `/api/shorten` request in a row returns a real `429`. 69 tests
+  passing, 100% coverage, lint/format clean.
