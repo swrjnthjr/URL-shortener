@@ -33,18 +33,22 @@ large), Conventional Commits, `npm test` passing before merge.
       (0, 1, large numbers near `Number.MAX_SAFE_INTEGER`); invalid input
       throws (see `TESTING.md` §4).
 
-## M2 — Database Layer
+## M2 — Database Layer — Done
 
-- [ ] Decide and document the migration approach (raw SQL scripts vs.
-      Prisma/Knex) — resolves the open question in `architecture.md` §9.
-- [ ] Write the `urls` table schema (id, short_code, long_url, created_at)
+- [x] Decide and document the migration approach: raw SQL files in
+      `migrations/`, applied via `scripts/migrate.js` (tracks applied
+      migrations in a `schema_migrations` table). No ORM/query builder.
+- [x] Write the `urls` table schema (id, short_code, long_url, created_at)
       as a migration.
-- [ ] Write the `clicks` table schema (id, short_code, ts, referrer,
-      user_agent) as a migration (architecture.md §6, D7).
-- [ ] Add `src/lib/db.js` — thin Postgres client wrapper (connection pool),
-      framework-agnostic.
+- [x] Write the `clicks` table schema (id, short_code, ts, referrer,
+      user_agent) as a migration (architecture.md §6, D7). No FK to
+      `urls.short_code` — it's populated in a second UPDATE after the
+      initial INSERT, so it can be briefly null; an index is used instead.
+- [x] Add `src/lib/db.js` — thin Postgres client wrapper (connection pool),
+      framework-agnostic. Unit tested with `pg` mocked (query delegation,
+      result passthrough, error propagation), 100% coverage.
 - [ ] Confirm all queries are parameterized (no string-concatenated SQL) —
-      `SECURITY.md` §2.
+      `SECURITY.md` §2. (Applies once M3/M4 write actual queries.)
 
 ## M3 — Shorten Endpoint (`POST /api/shorten`)
 
