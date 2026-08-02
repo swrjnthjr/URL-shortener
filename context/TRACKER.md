@@ -80,3 +80,8 @@ functionality but still owe test coverage per `TESTING.md`.
   so the regression can't silently reappear. Verified via `psql` that
   `urls` and `clicks` rows are written correctly, including referrer
   capture. `context/DEPLOYMENT.md` added.
+- 2026-08-02 — Added `migrations/003_set_urls_id_start.sql`, restarting
+  the `urls_id_seq` sequence at `100001` (new migration, not an edit to
+  001, since that may already be applied elsewhere). Verified against a
+  fresh Docker Compose stack: first row got `id=100001` -> short code
+  `q0V`.

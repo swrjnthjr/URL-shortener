@@ -47,8 +47,14 @@ large), Conventional Commits, `npm test` passing before merge.
 - [x] Add `src/lib/db.js` — thin Postgres client wrapper (connection pool),
       framework-agnostic. Unit tested with `pg` mocked (query delegation,
       result passthrough, error propagation), 100% coverage.
-- [ ] Confirm all queries are parameterized (no string-concatenated SQL) —
-      `SECURITY.md` §2. (Applies once M3/M4 write actual queries.)
+- [x] Confirm all queries are parameterized (no string-concatenated SQL) —
+      `SECURITY.md` §2. Verified in M3/M4's actual queries (`urlService.js`).
+- [x] `migrations/003_set_urls_id_start.sql` — restarts the `urls_id_seq`
+      sequence at `100001` so early short codes aren't single/double-digit.
+      A separate migration rather than editing `001_create_urls.sql`, since
+      that one may already be applied elsewhere. Verified against a fresh
+      Docker Compose stack: first inserted row got `id=100001`, encoded to
+      `q0V`.
 
 ## M3 — Shorten Endpoint (`POST /api/shorten`) — Done
 
