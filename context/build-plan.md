@@ -180,6 +180,12 @@ controllers needed somewhere to send caught errors via `next(err)`.
       with a scoped `eslint-disable-next-line`), four files reformatted by
       Prettier (whitespace-only, verified via `git diff`).
 - [x] Added to the pre-PR checklist in `CONTRIBUTING.md`.
+- [x] Husky `pre-commit` hook (`.husky/pre-commit`) runs `npm run lint`
+      and `npm run format:check` on every commit, so violations are caught
+      locally before a PR is even opened. Verified manually: a commit with
+      an ESLint error was rejected; a clean commit passed. Installed via
+      the standard `prepare` script (`npm install` wires it up
+      automatically, no manual step).
 
 ---
 

@@ -90,12 +90,21 @@ relevant to reviewers:
 - Scope: both tools run against `src/`, `test/`, `scripts/`, and `public/`.
   `context/` (docs) and `.claude/` (harness config) are intentionally
   excluded from Prettier — they're prose/config, not code style.
+- **Enforced automatically**: a Husky `pre-commit` hook (`.husky/pre-commit`)
+  runs `npm run lint` and `npm run format:check` on every commit. A commit
+  with lint errors or unformatted files is rejected locally — you won't
+  find out only after opening a PR. Run `npm run lint:fix` / `npm run
+  format` to fix and re-commit.
+- The hook is installed automatically via the `prepare` script the first
+  time anyone runs `npm install` after cloning (standard Husky v9 setup) —
+  no manual setup step required.
 
 ## 7. Before Opening a PR
 
 - [ ] `npm test` passes locally.
-- [ ] `npm run lint` passes with no errors.
-- [ ] `npm run format:check` passes (or run `npm run format` first).
+- [ ] `npm run lint` passes with no errors (also enforced by the pre-commit
+      hook).
+- [ ] `npm run format:check` passes (also enforced by the pre-commit hook).
 - [ ] New/changed logic in `src/services/` or `src/lib/` has corresponding
       Jest unit tests.
 - [ ] New/changed routes have Supertest coverage.

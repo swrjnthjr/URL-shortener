@@ -14,7 +14,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prepare": "husky"
   },
   "dependencies": {
     "express": "^4.19.2",
@@ -27,6 +28,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jest": "^29.16.0",
     "globals": "^17.8.0",
+    "husky": "^9.1.7",
     "jest": "^30.4.2",
     "nodemon": "^3.1.14",
     "prettier": "^3.9.6",
