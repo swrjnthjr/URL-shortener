@@ -42,6 +42,7 @@ These are natural extensions but are out of scope until explicitly added to
 | Cache          | Redis — caches `code -> longUrl` lookups for the redirect path |
 | Testing        | Jest + Supertest                     |
 | Container      | Docker (manual deploy, no CI/CD yet) |
+| Migrations     | Raw SQL files in `migrations/`, applied by `scripts/migrate.js` (no ORM/query builder) |
 
 ## 4. Core Flow: Shortening a URL
 
@@ -171,8 +172,6 @@ Per project convention (see `context/rules.md`):
 
 ## 9. Open Questions
 
-- Exact Postgres schema / migration tool (raw SQL vs. Prisma/Knex) — TBD in
-  `build-plan.md`.
 - Redis TTL value for cached redirects — TBD based on expected traffic
   patterns.
 - Whether click recording stays a synchronous Postgres insert or moves to an

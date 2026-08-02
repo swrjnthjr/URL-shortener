@@ -11,7 +11,7 @@ this file is the single source of truth for "what's actually built" vs.
 |---|-----------|--------|--------------|-------|
 | M0 | Project Scaffolding | Done | `feat/scaffolding-and-base62` | Folders, `server.js`/`app.js`, deps, jest config |
 | M1 | Base62 Encoding Library | Done | `feat/scaffolding-and-base62` | `src/lib/base62.js` + unit tests, 100% coverage |
-| M2 | Database Layer | Not started | — | `urls` + `clicks` schema, `src/lib/db.js` |
+| M2 | Database Layer | Done | `feat/database-layer` | Raw SQL migrations + `src/lib/db.js`, 100% unit coverage |
 | M3 | Shorten Endpoint (`POST /api/shorten`) | Not started | — | |
 | M4 | Redirect Endpoint (`GET /:code`, 301) | Not started | — | |
 | M5 | Click Analytics | Not started | — | `clicks` table writes, decoupled from cache path |
@@ -30,7 +30,7 @@ functionality but still owe test coverage per `TESTING.md`.
 | Module | Unit Tests | Integration Tests (Supertest) |
 |--------|------------|-------------------------------|
 | `src/lib/base62.js` | Done (100% coverage) | N/A (pure function) |
-| `src/lib/db.js` | Not started | N/A |
+| `src/lib/db.js` | Done (100% coverage) | N/A |
 | `src/lib/cache.js` | Not started | N/A |
 | `src/services/urlService.js` | Not started | Not started |
 | `src/services/analyticsService.js` | Not started | Not started |
@@ -44,3 +44,6 @@ functionality but still owe test coverage per `TESTING.md`.
 - 2026-08-02 — M0 and M1 done. Express pinned to 4.19.2 per `rules.md`;
   resulting `npm audit` advisories (all inside Express 4's own dependency
   tree) documented as an accepted exception in `SECURITY.md`.
+- 2026-08-02 — M2 done. Migration approach resolved: raw SQL files run by
+  `scripts/migrate.js`, no ORM. `db.js` is a thin `pg` Pool wrapper, unit
+  tested with `pg` mocked.
