@@ -5,7 +5,12 @@ const { Pool } = require('pg');
 const MIGRATIONS_DIR = path.join(__dirname, '..', 'migrations');
 
 async function run() {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  });
 
   try {
     await pool.query(`
