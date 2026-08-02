@@ -50,31 +50,35 @@ large), Conventional Commits, `npm test` passing before merge.
 - [ ] Confirm all queries are parameterized (no string-concatenated SQL) —
       `SECURITY.md` §2. (Applies once M3/M4 write actual queries.)
 
-## M3 — Shorten Endpoint (`POST /api/shorten`)
+## M3 — Shorten Endpoint (`POST /api/shorten`) — Done
 
-- [ ] `src/routes/shorten.js` — route definition only, no logic.
-- [ ] `src/controllers/shortenController.js` — validates the input URL
+- [x] `src/routes/shorten.js` — route definition only, no logic.
+- [x] `src/controllers/shortenController.js` — validates the input URL
       (well-formed, `http:`/`https:` only per `SECURITY.md` §2), wraps logic
       in `try/catch`, forwards errors via `next(err)`.
-- [ ] `src/services/urlService.js` — `createShortUrl(longUrl)`: inserts into
+- [x] `src/services/urlService.js` — `createShortUrl(longUrl)`: inserts into
       Postgres, gets the auto-assigned `id`, encodes it via `base62.js`,
       writes the `short_code` back.
-- [ ] Jest unit tests for `urlService` with the DB client mocked.
-- [ ] Supertest integration test: valid URL -> 201 + short code; malformed
-      URL -> 400 (`TESTING.md` §5).
+- [x] Jest unit tests for `urlService` with the DB client mocked.
+- [x] Supertest test: valid URL -> 201 + short code; malformed URL -> 400.
+      **Caveat**: `urlService` is mocked (no live Postgres in this
+      environment yet) — these verify route/controller/error-handler
+      wiring, not real DB behavior. True DB-backed integration tests
+      (`TESTING.md` §5) are deferred until Docker Compose test infra exists
+      (M9).
 
-## M4 — Redirect Endpoint (`GET /:code`)
+## M4 — Redirect Endpoint (`GET /:code`) — Done
 
-- [ ] `src/routes/redirect.js`.
-- [ ] `src/controllers/redirectController.js` — validates the code against
+- [x] `src/routes/redirect.js`.
+- [x] `src/controllers/redirectController.js` — validates the code against
       the Base62 charset before decoding (`SECURITY.md` §2), wraps in
       `try/catch`.
-- [ ] Extend `urlService` with `resolveShortCode(code)`: decode -> ID,
+- [x] Extend `urlService` with `resolveShortCode(code)`: decode -> ID,
       look up long URL, return 404 if not found.
-- [ ] Redirect with **301** (permanent) — see architecture.md D6 for the
+- [x] Redirect with **301** (permanent) — see architecture.md D6 for the
       analytics-caching tradeoff this implies; accepted as-is.
-- [ ] Supertest integration test: known code -> 301 with correct `Location`
-      header; unknown code -> 404.
+- [x] Supertest test: known code -> 301 with correct `Location` header;
+      unknown code -> 404. Same mocked-service caveat as M3.
 
 ## M5 — Click Analytics
 
@@ -115,13 +119,18 @@ large), Conventional Commits, `npm test` passing before merge.
 - [ ] Minimal CSS — no build step, no framework (architecture.md D5).
 - [ ] Serve `public/` as static assets from Express.
 
-## M8 — Centralized Error Handling & Middleware
+## M8 — Centralized Error Handling & Middleware — Done (pulled forward)
 
-- [ ] Global error-handling middleware in `server.js`
-      (`app.use((err, req, res, next) => {})`), mounted last.
-- [ ] Consistent error response shape (e.g. `{ error: { message } }`).
-- [ ] Confirm no controller or service writes a raw 500 response directly
-      (`rules.md` §"Error Handling & Middleware Chains").
+Implemented ahead of schedule in M3/M4 since the shorten/redirect
+controllers needed somewhere to send caught errors via `next(err)`.
+
+- [x] Global error-handling middleware, `src/middleware/errorHandler.js`,
+      mounted last in `src/app.js`.
+- [x] Consistent error response shape: `{ error: { message } }`.
+- [x] Confirm no controller or service writes a raw 500 response directly —
+      `shortenController`/`redirectController` both funnel exceptions to
+      `next(err)`; validation failures (400/404) are returned directly since
+      they're expected control flow, not exceptions.
 
 ## M9 — Dockerization
 
