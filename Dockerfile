@@ -14,4 +14,4 @@ COPY scripts ./scripts
 ENV NODE_ENV=production
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD ["sh", "-c", "npm run db:migrate && node server.js"]
